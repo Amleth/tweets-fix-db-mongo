@@ -50,12 +50,18 @@ public class Main {
         // timestamp_ms
         //
 
+        int n = 0;
         System.out.println("Pulling ``timestamp_ms`` up & converting to Long...");
         DBCursor tweetsToRestructure = coll.find();
         try {
             while (tweetsToRestructure.hasNext()) {
+                // System.out.println(n++);
                 DBObject doc = tweetsToRestructure.next();
-                Long timestamp = Long.parseLong(((DBObject) doc.get("rawJson")).get("timestamp_ms").toString());
+                DBObject rawJson = (DBObject) doc.get("rawJson");
+                DBObject limit = (DBObject) rawJson.get("limit");
+                if (limit != null) continue;
+                String useless_timestamp = (String) rawJson.get("timestamp_ms");
+                Long timestamp = Long.parseLong(useless_timestamp);
                 BasicDBObject newDoc = new BasicDBObject();
                 newDoc.append("$set", new BasicDBObject().append("timestamp_ms", timestamp));
                 coll.update(new BasicDBObject("_id", doc.get("_id")), newDoc);
